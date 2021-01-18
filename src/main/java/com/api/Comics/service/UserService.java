@@ -30,6 +30,10 @@ public class UserService {
 		return ResponseEntity.status(HttpStatus.CREATED).body("User successfully created.");
 	}
 	
+	public User getUserByUsername(String username) {
+		return userRepository.findByUsername(username);
+	}
+	
 	public boolean isUsernameUnique(String userName) {
 		User u = userRepository.findByUsername(userName);
 		
