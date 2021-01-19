@@ -33,6 +33,7 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 		//Disable authentication for login endpoint.
 		http.csrf().disable()
 			.authorizeRequests().antMatchers("/user/login").permitAll()
+			.antMatchers("/user/createUser").permitAll()
 			.anyRequest().authenticated().and().sessionManagement()
 			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
 		

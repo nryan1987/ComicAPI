@@ -42,8 +42,15 @@ public class UserController {
 	@PostMapping("/login")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authRequest) {
 		try {
+			User user = userService.getUserByUsername(authRequest.getUsername());
+			boolean validPW = userService.verifyHash(authRequest.getPassword(), user.getPassword());
+			
+			if(!validPW) {
+				throw new BadCredentialsException("Incorrect username or password");
+			}
+			
 			authManager.authenticate(
-				new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword())
+				new UsernamePasswordAuthenticationToken(authRequest.getUsername(), user.getPassword())
 			);
 		} catch(BadCredentialsException e) {
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(new AuthenticationResponse(null, "Incorrect username or password"));
