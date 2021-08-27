@@ -1,11 +1,13 @@
-package com.api.Comics.models;
+package com.api.Comics.entities;
 
 import lombok.Data;
 
 import java.io.File;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -13,28 +15,26 @@ import javax.persistence.Table;
 @Data
 @Entity
 @Table(name = "Comics")
-public class Comic {
+public class ComicEntity {
 	
 	@Id
 	private int ComicID;
 	
-	private int volume,
-	issue;
+	private int volume;
 	
-	private double pricePaid, value;
+	private double issue, pricePaid, value;
 
-	private String title, storyTitle, publisher, condition, picture;
+	@Column(name="`condition`")
+	private String condition;
+	
+	private String title, storyTitle, publisher, picture;
 
-	private Timestamp recordCreationDate,
-	lastUpdated;
+	//The values for RecordCreationDate and LastUpdated are handled on the DB side.
+	@Column(name = "RecordCreationDate", /*insertable = false,*/ updatable = false)
+	private Timestamp recordCreationDate;
+	
+	@Column(name = "LastUpdated", /*insertable = false,*/ updatable = false)
+	private Timestamp lastUpdated;
 
 	private LocalDate publicationDate;
-	
-	public boolean doesPictureExist() {
-		if(this.picture == null || this.picture.length() == 0)
-			return false;
-		
-		File picFile = new File(this.picture);
-		return picFile.exists();
-	}
 }

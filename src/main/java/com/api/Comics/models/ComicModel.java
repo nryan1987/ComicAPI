@@ -12,10 +12,9 @@ import lombok.Data;
 
 @Data
 public class ComicModel {
-	private int ComicID, volume,
-	issue;
+	private int ComicID, volume;
 	
-	private double pricePaid, value;
+	private double issue, pricePaid, value;
 	
 	private String title, storyTitle, publisher, picture, condition;
 
