@@ -49,4 +49,8 @@ public class ComicModel {
 		
 		return ce;
 	}
+
+	public String getShortString() {
+		return this.title + " " + "VOL. " + this.volume + " #" + this.issue;
+	}
 }

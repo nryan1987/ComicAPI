@@ -1,11 +1,8 @@
 package com.api.Comics.service;
 
-import java.sql.Timestamp;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,6 +14,7 @@ import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.entities.NoteEntity;
 import com.api.Comics.models.CollectionStats;
 import com.api.Comics.models.ComicModel;
+import com.api.Comics.models.ResponseError;
 import com.api.Comics.repository.ComicRepository;
 import com.api.Comics.repository.NoteRepository;
 
@@ -54,19 +52,16 @@ public class ComicService {
 		return comicLst;
 	}
 	
-	public synchronized Map<ComicModel, String> addComicsList(List<ComicModel> lst) {
-		HashMap<ComicModel, String> returnMap = new HashMap<>();
+	public synchronized List<ResponseError> addComicsList(List<ComicModel> lst) {
+		List<ResponseError> errors = new ArrayList<>();
 		Integer ID = comicRepository.getMaxComicID();
 		logger.info("MAX ID: " + ID);
 	
-		Timestamp ts = new Timestamp(System.currentTimeMillis());
 		LocalDate today = LocalDate.now();
 		for(ComicModel c : lst) {
 			c.setComicID(++ID);
 			c.setCondition("MT 10.0");
 			c.setPublicationDate(LocalDate.of(today.getYear(), today.getMonthValue(), 1));
-			c.setRecordCreationDate(ts);
-			c.setLastUpdated(ts);
 			if(c.getNotes() == null) {
 				c.setNotes(new ArrayList<NoteEntity>());
 			}
@@ -82,10 +77,10 @@ public class ComicService {
 			}
 			catch(Exception e) {
 				e.printStackTrace();
-				returnMap.put(c, e.getMessage());
+				errors.add(new ResponseError(c.getShortString(), e.getMessage()));
 			}
 		}
 		
-		return returnMap;
+		return errors;
 	}
 }

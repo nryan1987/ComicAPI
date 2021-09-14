@@ -1,7 +1,6 @@
 package com.api.Comics.controllers;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
 
 import org.slf4j.Logger;
@@ -18,6 +17,7 @@ import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.api.Comics.models.Response;
+import com.api.Comics.models.ResponseError;
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.models.CollectionStats;
 import com.api.Comics.models.ComicModel;
@@ -77,10 +77,13 @@ public class ComicController {
 	public ResponseEntity<?> addComics(@RequestBody List<ComicModel> comics) {
 		logger.info("addComics " + comics);
 		
-		Map<ComicModel, String> errorMap = comicService.addComicsList(comics);
+		List<ResponseError> errors = comicService.addComicsList(comics);
 		
-		if(errorMap.size() > 0) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorMap);
+		if(errors.size() > 0) {
+			Response r = new Response("Some comics failed to save");
+			r.setErrors(errors);
+
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(r);
 		}
 		
 		return ResponseEntity.ok(new Response("All comics added successfully."));
