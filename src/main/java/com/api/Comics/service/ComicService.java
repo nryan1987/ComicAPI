@@ -12,11 +12,13 @@ import org.springframework.stereotype.Service;
 import com.api.Comics.controllers.ComicController;
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.entities.NoteEntity;
+import com.api.Comics.entities.PublisherEntity;
 import com.api.Comics.models.CollectionStats;
 import com.api.Comics.models.ComicModel;
 import com.api.Comics.models.ResponseError;
 import com.api.Comics.repository.ComicRepository;
 import com.api.Comics.repository.NoteRepository;
+import com.api.Comics.repository.PublisherRepository;
 
 @Service
 public class ComicService {
@@ -26,6 +28,7 @@ public class ComicService {
 	private ComicRepository comicRepository;
 	
 	@Autowired NoteRepository noteRepository;
+	@Autowired PublisherRepository publisherRepository;
 
 	public List<ComicEntity> latestIssues(int numIssues) {
 		return comicRepository.findLatestIssues(numIssues);
@@ -56,9 +59,26 @@ public class ComicService {
 		List<ResponseError> errors = new ArrayList<>();
 		Integer ID = comicRepository.getMaxComicID();
 		logger.info("MAX ID: " + ID);
-	
+
+		Iterable<PublisherEntity> publishers = publisherRepository.findAll();
+		ArrayList<String> publishersStr = new ArrayList<>();
+		int publisherID = publisherRepository.getMaxPublisherID().intValue();
+
 		LocalDate today = LocalDate.now();
 		for(ComicModel c : lst) {
+
+			publishers.forEach(publisher -> { publishersStr.add(publisher.getPublisher()); });
+			boolean containsSearchStr = publishersStr.stream().anyMatch(c.getPublisher()::equalsIgnoreCase);
+
+			if(!containsSearchStr) {
+				PublisherEntity pe = new PublisherEntity();
+				pe.setPublisherID(++publisherID);
+				pe.setPublisher(c.getPublisher());
+				publisherRepository.save(pe);
+
+				publishersStr.add(c.getPublisher());
+			}
+
 			c.setComicID(++ID);
 			c.setCondition("MT 10.0");
 			c.setPublicationDate(LocalDate.of(today.getYear(), today.getMonthValue(), 1));
