@@ -7,6 +7,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import com.api.Comics.controllers.ComicController;
@@ -102,5 +106,22 @@ public class ComicService {
 		}
 		
 		return errors;
+	}
+	
+	public Page<ComicEntity> getComicsPage(int pageNumber, int pageSize, String searchTerm) {
+		logger.info("pageNumber: " + pageNumber);
+		logger.info("pageSize: " + pageSize);
+		logger.info("searchTerm: " + searchTerm);
+		
+		Pageable comicPage = PageRequest.of(pageNumber, pageSize);
+		
+		if(searchTerm == null || searchTerm.isEmpty()) {
+			logger.info("null searchTerm");
+			return comicRepository.getAllComics(comicPage);
+		}
+		else {
+			logger.info("not null searchTerm");
+			return comicRepository.getAllComicsSearchTerm(searchTerm, comicPage);
+		}
 	}
 }

@@ -30,10 +30,10 @@ public class ComicEntity {
 	private String title, storyTitle, publisher, picture;
 
 	//The values for RecordCreationDate and LastUpdated are handled on the DB side.
-	@Column(name = "RecordCreationDate", /*insertable = false,*/ updatable = false)
+	@Column(name = "RecordCreationDate", insertable = false, updatable = false)
 	private Timestamp recordCreationDate;
 	
-	@Column(name = "LastUpdated", /*insertable = false,*/ updatable = false)
+	@Column(name = "LastUpdated", insertable = false, updatable = false)
 	private Timestamp lastUpdated;
 
 	private LocalDate publicationDate;

@@ -3,9 +3,12 @@ package com.api.Comics.controllers;
 import java.util.List;
 import java.util.Optional;
 
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -87,5 +90,48 @@ public class ComicController {
 		}
 		
 		return ResponseEntity.ok(new Response("All comics added successfully."));
+	}
+	
+	@PostMapping("/getComicsPage/{pageNumber}/{pageSize}")
+	public String getComicsPage(@PathVariable int pageNumber,
+			@PathVariable int pageSize,
+			@RequestBody(required = false) String searchTerm) {
+		logger.info("pageNumber: " + pageNumber);
+		logger.info("pageSize: " + pageSize);
+		logger.info("searchTerm: " + searchTerm);
+		Response r;
+		Page<ComicEntity> comicPage = comicService.getComicsPage(pageNumber, pageSize, searchTerm);
+		
+		HttpStatus status = HttpStatus.OK;
+		JSONObject returnJson = new JSONObject();
+		
+		if(comicPage.getSize() == 0) {
+			status = HttpStatus.EXPECTATION_FAILED;
+			returnJson.put("message", "No comics in page " + pageNumber);
+		}
+		else {
+			JSONArray arr = new JSONArray();
+			comicPage.forEach(c -> {
+				logger.info(c.toString());
+				JSONObject jo = new JSONObject();
+				jo.put("comicID", c.getComicID());
+				jo.put("title", c.getTitle());
+				jo.put("volume", c.getVolume());
+				jo.put("issue", c.getIssue());
+				jo.put("pricePaid", c.getPricePaid());
+				jo.put("value", c.getValue());
+				jo.put("publicationDate", c.getPublicationDate());
+				jo.put("publisher", c.getPublisher());
+				jo.put("condition", c.getCondition());
+				arr.put(jo);
+			});
+			returnJson.put("value", arr);
+			returnJson.put("totalPages", comicPage.getTotalPages());
+			returnJson.put("message", "Page query successful.");
+		}
+		
+		returnJson.put("status", status);
+		
+		return returnJson.toString();
 	}
 }
