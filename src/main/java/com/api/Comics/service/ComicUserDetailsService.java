@@ -22,7 +22,7 @@ public class ComicUserDetailsService implements UserDetailsService{
 		//Save hashed pwd in db.
 		//Query db by uName and pwd.
 		
-		com.api.Comics.models.User user = userService.getUserByUsername(username);
+		com.api.Comics.entities.UserEntity user = userService.getUserByUsername(username);
 		
 		return new User(user.getUserName(), user.getPassword(), new ArrayList<>());
 	}

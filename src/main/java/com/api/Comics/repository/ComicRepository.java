@@ -5,13 +5,14 @@ import java.util.Map;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.api.Comics.entities.ComicEntity;
 
-public interface ComicRepository extends CrudRepository<ComicEntity, Integer> {
+public interface ComicRepository extends JpaRepository<ComicEntity, Integer> {
 	
 	@Query(value = "SELECT * FROM Comics c WHERE ComicID=?1", nativeQuery = true)
 	ComicEntity findSingleIssue(Integer id);
@@ -19,7 +20,10 @@ public interface ComicRepository extends CrudRepository<ComicEntity, Integer> {
 	@Query(value = "SELECT * FROM Comics ORDER BY ComicID DESC LIMIT ?1", nativeQuery = true)
 	List<ComicEntity> findLatestIssues(Integer numIssues);
 	
-	@Query(value = "SELECT DISTINCT c.title, c.publisher FROM Comics c", nativeQuery = true)
+	//@Query(value = "SELECT * FROM Comics WHERE title=?1 ORDER BY ComicID DESC", nativeQuery = true)
+	List<ComicEntity> findByTitle(@Param(value = "title") String title);
+	
+	@Query(value = "SELECT DISTINCT c.title, MAX(c.Volume) as volume, c.publisher FROM Comics c GROUP BY c.Title, c.Publisher ", nativeQuery = true)
 	List<Object[]> getTitlesAndPublishers();
 	
 	@Query(value = "SELECT Count(Comics.ComicID) AS CountOfComics, Sum(Comics.PricePaid) AS SumOfPricePaid,"

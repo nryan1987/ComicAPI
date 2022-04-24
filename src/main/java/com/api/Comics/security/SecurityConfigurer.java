@@ -10,7 +10,15 @@ import org.springframework.security.config.annotation.web.configuration.WebSecur
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.AuthenticationEntryPoint;
+import org.springframework.security.web.authentication.HttpStatusEntryPoint;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
+import org.springframework.security.web.util.matcher.NegatedRequestMatcher;
+import org.springframework.security.web.util.matcher.OrRequestMatcher;
+import org.springframework.security.web.util.matcher.RequestMatcher;
+import static org.springframework.security.config.http.SessionCreationPolicy.STATELESS;
+import static org.springframework.http.HttpStatus.FORBIDDEN;
 
 import com.api.Comics.filters.JwtRequestFilter;
 import com.api.Comics.service.ComicUserDetailsService;
@@ -23,6 +31,12 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 	@Autowired
 	private JwtRequestFilter jwtRequestFilter;
 	
+	private static final RequestMatcher PUBLIC_URLS = new OrRequestMatcher(
+		    new AntPathRequestMatcher("/user/**"),
+		    new AntPathRequestMatcher("/app/**")
+		  );
+	private static final RequestMatcher PROTECTED_URLS = new NegatedRequestMatcher(PUBLIC_URLS);
+	
 	@Override
 	protected void configure(AuthenticationManagerBuilder auth) throws Exception {
 		auth.userDetailsService(userDetailsService);
@@ -31,11 +45,31 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 	@Override
 	protected void configure(HttpSecurity http) throws Exception {
 		//Disable authentication for login endpoint.
-		http.csrf().disable()
+		/*http.csrf().disable()
 			.authorizeRequests().antMatchers("/user/login").permitAll()
 			.antMatchers("/user/createUser").permitAll()
 			.anyRequest().authenticated().and().sessionManagement()
-			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+			.sessionCreationPolicy(SessionCreationPolicy.STATELESS);*/
+		http
+			.cors().and()
+	      .sessionManagement()
+	      .sessionCreationPolicy(STATELESS)
+	      .and()
+	      .exceptionHandling()
+	      // this entry point handles when you request a protected page and you are not yet
+	      // authenticated
+	      .defaultAuthenticationEntryPointFor(forbiddenEntryPoint(), PROTECTED_URLS)
+	      .and()
+	      //.authenticationProvider(provider)
+	      .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
+	      .authorizeRequests()
+	      .requestMatchers(PROTECTED_URLS)
+	      .authenticated()
+	      .and()
+	      .csrf().disable()
+	      .formLogin().disable()
+	      .httpBasic().disable()
+	      .logout().disable();
 		
 		http.addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class);
 	}
@@ -49,5 +83,10 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 	@Bean
 	public PasswordEncoder passwordEncoder() {
 		return NoOpPasswordEncoder.getInstance();
+	}
+	
+	@Bean
+	AuthenticationEntryPoint forbiddenEntryPoint() {
+		return new HttpStatusEntryPoint(FORBIDDEN);
 	}
 }

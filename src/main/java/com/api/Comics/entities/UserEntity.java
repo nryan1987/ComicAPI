@@ -1,4 +1,4 @@
-package com.api.Comics.models;
+package com.api.Comics.entities;
 
 import java.sql.Timestamp;
 
@@ -11,7 +11,7 @@ import lombok.Data;
 @Data
 @Entity
 @Table(name = "User")
-public class User {
+public class UserEntity {
 	
 	@Id
 	private String userID;

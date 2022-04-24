@@ -3,6 +3,7 @@ package com.api.Comics.util;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.ExpiredJwtException;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
@@ -29,7 +30,14 @@ public class JwtUtil {
 	        return claimsResolver.apply(claims);
 	    }
 	    private Claims extractAllClaims(String token) {
-	        return Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+	    	Claims c = null;
+	    	try {
+	    		c = Jwts.parser().setSigningKey(SECRET_KEY).parseClaimsJws(token).getBody();
+	    	}
+	    	catch(ExpiredJwtException e) {
+	    		
+	    	}
+	        return c;
 	    }
 
 	    private Boolean isTokenExpired(String token) {

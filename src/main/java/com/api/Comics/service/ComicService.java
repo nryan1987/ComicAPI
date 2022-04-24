@@ -38,6 +38,10 @@ public class ComicService {
 		return comicRepository.findLatestIssues(numIssues);
 	}
 	
+	public List<ComicEntity> findByTitle(String title) {
+		return comicRepository.findByTitle(title);
+	}
+	
 	public CollectionStats getCollectionStats() {
 		CollectionStats colStats = new CollectionStats(comicRepository.getCollectionStats());
 		return colStats;
@@ -51,7 +55,8 @@ public class ComicService {
 		for(Object[] obj : lst) {
 			ComicEntity c = new ComicEntity();
 			c.setTitle((String)obj[0]);
-			c.setPublisher((String)obj[1]);
+			c.setVolume((Integer)obj[1]);
+			c.setPublisher((String)obj[2]);
 			
 			comicLst.add(c);
 		}

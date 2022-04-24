@@ -1,6 +1,7 @@
 package com.api.Comics.controllers;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.json.JSONArray;
@@ -24,6 +25,7 @@ import com.api.Comics.models.ResponseError;
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.models.CollectionStats;
 import com.api.Comics.models.ComicModel;
+import com.api.Comics.models.QueryRequest;
 import com.api.Comics.repository.ComicRepository;
 import com.api.Comics.service.ComicService;
 
@@ -60,6 +62,15 @@ public class ComicController {
 	public List<ComicEntity> getLatestIssues(@RequestBody int numIssues) {
 		logger.info("latest100Issues " + numIssues);
 		return comicService.latestIssues(numIssues);
+	}
+	
+	@PostMapping("/findByTitle")
+	//public List<ComicEntity> findByTitle(@RequestBody Map<Object, Object> parameters) {
+	public List<ComicEntity> findByTitle(@RequestBody String parameters) {
+		logger.info("Find by title: {}", parameters);
+		//String title = (String) parameters.get("title");
+		List<ComicEntity> comics = comicService.findByTitle(parameters); 
+		return comics;
 	}
 
 	@GetMapping("/all")
@@ -110,9 +121,9 @@ public class ComicController {
 			returnJson.put("message", "No comics in page " + pageNumber);
 		}
 		else {
+			logger.info("returning {} comics", comicPage.getNumberOfElements());
 			JSONArray arr = new JSONArray();
 			comicPage.forEach(c -> {
-				logger.info(c.toString());
 				JSONObject jo = new JSONObject();
 				jo.put("comicID", c.getComicID());
 				jo.put("title", c.getTitle());
