@@ -7,10 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class ComicsApplication {
 
 	public static void main(String[] args) {
-	        System.out.println("JDBC_URL: " + System.getenv("JDBC_URL"));
-		System.out.println("JDBC_USER_NAME: " + System.getenv("JDBC_USER_NAME"));
-		System.out.println("JDBC_PASSWORD: " + System.getenv("JDBC_PASSWORD"));
-
 		SpringApplication.run(ComicsApplication.class, args);
 	}
 
