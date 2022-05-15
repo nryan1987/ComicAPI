@@ -44,12 +44,11 @@ public class UserController {
 	
 	@PostMapping("/login")
 	public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authRequest) {
-		logger.info("Login endpoint: " + authRequest.toString());
+		logger.info("Attempting login for user: " + authRequest.getUsername());
 		
 		UserSettingsEntity settings;
 		try {
 			UserEntity user = userService.getUserByUsername(authRequest.getUsername());
-			logger.info("User: " + user);
 			if(user == null) {
 				throw new BadCredentialsException("User not found");
 			}
