@@ -103,6 +103,16 @@ public class ComicController {
 		return ResponseEntity.ok(new Response("All comics added successfully."));
 	}
 	
+	@PostMapping("/updateComic")
+	public ResponseEntity<?> updateComic(@RequestBody ComicModel comic) {
+		ComicEntity comicEntity = comicService.updateComic(comic);
+		if(comicEntity == null) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		} else {
+			return ResponseEntity.ok(new Response("Comic " + comicEntity.getComicID() + " successfully updated."));
+		}
+	}
+	
 	@PostMapping("/getComicsPage/{pageNumber}/{pageSize}")
 	public String getComicsPage(@PathVariable int pageNumber,
 			@PathVariable int pageSize,

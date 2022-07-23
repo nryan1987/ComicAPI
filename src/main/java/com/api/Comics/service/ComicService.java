@@ -113,6 +113,17 @@ public class ComicService {
 		return errors;
 	}
 	
+	public synchronized ComicEntity updateComic(ComicModel comicModel) {
+		ComicEntity comicEntity = comicModel.getComicEntity();
+		logger.info("saving comic: " + comicEntity);
+		try {
+			return comicRepository.save(comicEntity);
+		} catch (Exception e) {
+			logger.error(e.getMessage());
+			return null;
+		}
+	}
+	
 	public Page<ComicEntity> getComicsPage(int pageNumber, int pageSize, String searchTerm) {
 		logger.info("pageNumber: " + pageNumber);
 		logger.info("pageSize: " + pageSize);
