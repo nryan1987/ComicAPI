@@ -3,6 +3,7 @@ package com.api.Comics.entities;
 import java.sql.Timestamp;
 
 import javax.persistence.Id;
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Table;
 
@@ -17,6 +18,9 @@ public class UserEntity {
 	private String userID;
 	private String userName, password, emailAddress;
 	
-	private Timestamp recordCreationDate, lastUpdatedDate;
+	@Column(name = "RecordCreationDate", insertable = false, updatable = false)
+	private Timestamp recordCreationDate;
+	@Column(name = "LastUpdatedDate", insertable = false, updatable = false)
+	private Timestamp lastUpdatedDate;
 
 }
