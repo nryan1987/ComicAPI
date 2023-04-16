@@ -8,10 +8,10 @@ import lombok.Data;
 
 @Data
 public class Response {
-	String message;
-	List<ResponseError> errors;
-	List<?> value;
-	JSONObject body;
+	private String message;
+	private List<ResponseError> errors;
+	private List<?> value;
+	private JSONObject body;
 	
 	public Response(String message) {
 		this.message = message;

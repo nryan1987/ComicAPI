@@ -2,10 +2,8 @@ package com.api.Comics.entities;
 
 import lombok.Data;
 
-import java.io.File;
 import java.sql.Timestamp;
 import java.time.LocalDate;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
