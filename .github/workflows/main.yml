@@ -14,7 +14,7 @@ jobs:
       with:
         java-version: 1.11
     - name: Write value to Properties-file
-    - uses: christian-draeger/write-properties@1.1.0
+      uses: christian-draeger/write-properties@1.1.0
       with:
         path: './src/main/resources/application.properties'
         property: |
