@@ -13,28 +13,35 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.11
-    - name: Write url property
-      uses: christian-draeger/write-properties@1.1.0
-      with:
-        path: './src/main/resources/application.properties'
+    - name: Adding secrets
+      run: |
+          echo spring.datasource.username=$DEV_DB_USERNAME >> src/main/resources/application.properties
+          echo spring.datasource.password=$DEV_DB_PASSWORD >> src/main/resources/application.properties
+          echo spring.datasource.url=$DEV_DB_URL >> src/main/resources/application.properties
+          cat src/main/resources/application.properties
+      shell: bash
+    #- name: Write url property
+     # uses: christian-draeger/write-properties@1.1.0
+      #with:
+       # path: './src/main/resources/application.properties'
         # The property keys you want to write. Accepts an array.
-        property: 'spring.datasource.url'
+        #property: 'spring.datasource.url'
         # The property values you want to write (same order as the keys). Accepts an array.
-        value: 'jdbc:mysql://kandor:3306/Comics'
-    - name: Write username property
-      uses: Reedyuk/write-properties@v1.0.3
-      with:
+        #value: 'jdbc:mysql://kandor:3306/Comics'
+    #- name: Write username property
+     # uses: Reedyuk/write-properties@v1.0.3
+      #with:
         # The path to properties file to write
-        path: './src/main/resources/application.properties'
-        property: 'spring.datasource.username'
-        value: ${{ secrets.DEV_DB_USERNAME }}
-    - name: Write password property
-      uses: Reedyuk/write-properties@v1.0.3
-      with:
+       # path: './src/main/resources/application.properties'
+        #property: 'spring.datasource.username'
+        #value: ${{ secrets.DEV_DB_USERNAME }}
+    #- name: Write password property
+     # uses: Reedyuk/write-properties@v1.0.3
+      #with:
         # The path to properties file to write
-        path: './src/main/resources/application.properties'
-        property: 'spring.datasource.password'
-        value: ${{ secrets.DEV_DB_PASSWORD }}
+       # path: './src/main/resources/application.properties'
+        #property: 'spring.datasource.password'
+        #value: ${{ secrets.DEV_DB_PASSWORD }}
     - name: Build with Maven
       run: mvn clean install
     - name: Publish to Docker Hub
