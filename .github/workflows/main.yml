@@ -18,8 +18,8 @@ jobs:
       with:
         # The path to properties file to write
         path: './src/main/resources/application.properties'
-        property: 'spring.datasource.url'
-        value: 'jdbc:mysql://kandor:3306/Comics?useUnicode=true&useJDBCCompliantTimezoneShift=true&useLegacyDatetimeCode=false&serverTimezone=UTC'
+        property: 'spring.datasource.username'
+        value: ${{ secrets.DEV_DB_USERNAME }}
     - name: Build with Maven
       run: mvn clean install
     - name: Publish to Docker Hub
