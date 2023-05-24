@@ -13,6 +13,18 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.11
+    - name: Write value to Properties-file
+    - uses: christian-draeger/write-properties@1.1.0
+      with:
+        path: './src/main/resources/application.properties'
+        property: |
+          'spring.datasource.url'
+          'spring.datasource.username'
+          'spring.datasource.password'
+        value: |
+          ${{ secrets.DEV_DB_URL }}
+          ${{ secrets.DEV_DB_USERNAME }}
+          ${{ secrets.DEV_DB_PASSWORD }}
     - name: Build with Maven
       run: mvn clean install
     - name: Publish to Docker Hub
