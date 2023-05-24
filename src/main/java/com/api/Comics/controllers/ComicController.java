@@ -1,8 +1,6 @@
 package com.api.Comics.controllers;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -43,7 +41,7 @@ public class ComicController {
 	Logger logger = LoggerFactory.getLogger(ComicController.class);
 
 	@GetMapping("/{id}")
-	public ComicModel oneComic(@PathVariable int id) {
+	public ResponseEntity<SingleComicResponse> oneComic(@PathVariable int id) {
 		logger.info("Comic controller " + id);
 		return comicService.getComic(id);
 	}

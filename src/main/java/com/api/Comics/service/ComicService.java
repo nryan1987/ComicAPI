@@ -1,10 +1,12 @@
 package com.api.Comics.service;
 
 import java.sql.Timestamp;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -36,6 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 @Service
 public class ComicService {
 	Logger logger = LoggerFactory.getLogger(ComicController.class);
+	private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 	
 	@Autowired
 	private ComicRepository comicRepository;
@@ -60,15 +63,19 @@ public class ComicService {
 		return colStats;
 	}
 	
-	public ComicModel getComic(int id) {
+	public ResponseEntity<SingleComicResponse> getComic(int id) {		
+		SingleComicResponse response = new SingleComicResponse();
 		Optional<ComicEntity> comicEntity = comicRepository.findById(id);
 		if(comicEntity.isPresent()) {
-			ComicModel cModel = objectMapper.convertValue(comicEntity.get(), ComicModel.class);
-			cModel.setNotes(noteRepository.findNotesByComicID(id));
-			return cModel;
+			response = objectMapper.convertValue(comicEntity.get(), SingleComicResponse.class);
+			response.setNotes(noteRepository.findNotesByComicID(id));
+			response.setRecordCreationDate(LocalDateTime.ofInstant(Instant.ofEpochMilli(comicEntity.get().getRecordCreationDate().getTime()), ZoneId.of("UTC")).format(formatter));
+			response.setLastUpdated(LocalDateTime.ofInstant(Instant.ofEpochMilli(comicEntity.get().getLastUpdated().getTime()), ZoneId.of("UTC")).format(formatter));
+			return ResponseEntity.ok(response);
+		} else {
+			response.setMessage("No comic with id=" + id + " found.");
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
-		
-		return null;
 	}
 	
 	public List<ComicEntity> getTitlesAndPublishers() {
@@ -143,30 +150,36 @@ public class ComicService {
 	}
 	
 	public synchronized ResponseEntity<SingleComicResponse> updateComic(UpdateComicRequest updateComicRequest) {
-		SingleComicResponse response;
+		SingleComicResponse response = new SingleComicResponse();
 		logger.info("saving comic: " + updateComicRequest);
 		try {
+			Optional<ComicEntity> comicEntity = comicRepository.findById(updateComicRequest.getComicID());
+			if(comicEntity.isEmpty()) {
+				response.setMessage("No comic with id=" + updateComicRequest.getComicID() + " found.");
+				return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+			}
+			
+			Timestamp recordCreationTS = comicEntity.get().getRecordCreationDate();
+			
 			ComicEntity comicEntityToSave = objectMapper.convertValue(updateComicRequest, ComicEntity.class);
 			comicEntityToSave.setPublisher(publisherService.addPublisher(updateComicRequest.getPublisher()));
-			ComicEntity comicEntity = comicRepository.save(comicEntityToSave);
-			Iterable<NoteEntity> notesEntitiesIterable = noteRepository.saveAll(updateComicRequest.getNotes());
+			comicRepository.save(comicEntityToSave);
+			noteRepository.saveAll(updateComicRequest.getNotes());
 
 			if(updateComicRequest.getDeletedNotes() != null) {
 				updateComicRequest.getDeletedNotes().forEach(noteEntity -> {
 					logger.info("deleting note: " + noteEntity);
 					noteRepository.deleteById(noteEntity.getNoteID());
 				});
-				
 			}
 			
-			List<NoteEntity> notesEntities = new ArrayList<NoteEntity>();
-			notesEntitiesIterable.forEach(notesEntities::add);
-			ComicModel cModel = objectMapper.convertValue(comicEntity, ComicModel.class);
-			cModel.setNotes(notesEntities);
-			cModel.setLastUpdated(Timestamp.valueOf(LocalDateTime.now().atZone(ZoneId.of("America/Chicago")).toLocalDateTime()));
+			ZonedDateTime todayCDT = LocalDateTime.now().atZone(ZoneId.of("America/Chicago"));
 			
-			response = new SingleComicResponse("Comic " + comicEntity.getComicID() + " successfully updated.");
-			response.setComicModel(cModel);
+			response = objectMapper.convertValue(comicEntityToSave, SingleComicResponse.class);
+			response.setNotes(noteRepository.findNotesByComicID(updateComicRequest.getComicID()));
+			response.setRecordCreationDate(recordCreationTS.toLocalDateTime().atZone(ZoneId.of("UTC")).format(formatter));
+			response.setLastUpdated(todayCDT.format(formatter));
+			response.setMessage("Comic " + updateComicRequest.getComicID() + " successfully updated.");
 			return ResponseEntity.ok(response);
 		} catch (Exception e) {
 			logger.error(e.getMessage());
