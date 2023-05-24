@@ -19,7 +19,7 @@ jobs:
         # The path to properties file to write
         path: './src/main/resources/application.properties'
         property: 'spring.datasource.url'
-        value: 'test'
+        value: 'jdbc:mysql://kandor:3306/Comics'
     - name: Write username property
       uses: Reedyuk/write-properties@v1.0.3
       with:
