@@ -1,5 +1,4 @@
 FROM openjdk:11
-RUN ./mvnw package java -jar target/comics.jar
-ADD target/comics.jar comics.jar
+ADD target/Comics-0.0.1-SNAPSHOT.jar Comics-0.0.1-SNAPSHOT.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "comics.jar"]
+ENTRYPOINT ["java", "-jar", "Comics-0.0.1-SNAPSHOT.jar"]
