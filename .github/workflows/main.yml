@@ -14,11 +14,12 @@ jobs:
       with:
         java-version: 1.11
     - name: Write url property
-      uses: Reedyuk/write-properties@v1.0.3
+      uses: christian-draeger/write-properties@1.1.0
       with:
-        # The path to properties file to write
         path: './src/main/resources/application.properties'
+        # The property keys you want to write. Accepts an array.
         property: 'spring.datasource.url'
+        # The property values you want to write (same order as the keys). Accepts an array.
         value: 'jdbc:mysql://kandor:3306/Comics'
     - name: Write username property
       uses: Reedyuk/write-properties@v1.0.3
