@@ -13,22 +13,20 @@ jobs:
       uses: actions/setup-java@v1
       with:
         java-version: 1.11
-    - name: Write db server property
-      uses: christian-draeger/write-properties@1.1.0
-      with:
-        path: './src/main/resources/application.properties'
-        # The property keys you want to write. Accepts an array.
-        property: 'db.server'
-        # The property values you want to write (same order as the keys). Accepts an array.
-        value: 'kandor'
     - name: Write db name property
-      uses: christian-draeger/write-properties@1.1.0
+      uses: Reedyuk/write-properties@v1.0.3
       with:
+        # The path to properties file to write
         path: './src/main/resources/application.properties'
-        # The property keys you want to write. Accepts an array.
         property: 'db.name'
-        # The property values you want to write (same order as the keys). Accepts an array.
         value: 'Comics'
+    - name: Write db server property
+      uses: Reedyuk/write-properties@v1.0.3
+      with:
+        # The path to properties file to write
+        path: './src/main/resources/application.properties'
+        property: 'db.server'
+        value: ${{ secrets.DEV_DB_IP }}
     - name: Write username property
       uses: Reedyuk/write-properties@v1.0.3
       with:
@@ -41,7 +39,7 @@ jobs:
       with:
         # The path to properties file to write
         path: './src/main/resources/application.properties'
-        #property: 'spring.datasource.password'
+        property: 'spring.datasource.password'
         value: ${{ secrets.DEV_DB_PASSWORD }}
     - name: Adding secrets
       run: |
