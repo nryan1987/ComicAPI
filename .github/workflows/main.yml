@@ -9,6 +9,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v2
+    - name: Bump Version
+      id: bump
+      uses: nnichols/maven-version-bump-action@v3
+      with:
+        github-token: ${{ secrets.github_token }}
+
+    - name: Print Version
+      run: "echo 'New Version: ${{steps.bump.outputs.version}}'"
     - name: Set up JDK
       uses: actions/setup-java@v1
       with:
