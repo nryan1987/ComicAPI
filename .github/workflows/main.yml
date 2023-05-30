@@ -49,8 +49,8 @@ jobs:
         path: './src/main/resources/application.properties'
         property: 'spring.datasource.password'
         value: ${{ secrets.DEV_DB_PASSWORD }}
-    - name: Build with Maven
-      run: mvn package && java -jar target/comics-0.0.1.jar
+    #- name: Build with Maven
+      #run: mvn package && java -jar target/comics-0.0.1.jar
     - name: Publish to Docker Hub
       uses: docker/build-push-action@v1
       with:
