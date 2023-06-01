@@ -62,4 +62,5 @@ jobs:
       run: |
         docker build -t comics .
         docker tag comics nryan1987/comics:dev-latest
+        docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
         docker push nryan1987/comics:dev-latest
