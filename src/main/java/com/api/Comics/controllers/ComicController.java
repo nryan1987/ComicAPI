@@ -1,8 +1,6 @@
 package com.api.Comics.controllers;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -22,10 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import com.api.Comics.models.Response;
 import com.api.Comics.models.ResponseError;
+import com.api.Comics.models.SingleComicResponse;
+import com.api.Comics.models.UpdateComicRequest;
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.models.CollectionStats;
 import com.api.Comics.models.ComicModel;
-import com.api.Comics.models.QueryRequest;
 import com.api.Comics.repository.ComicRepository;
 import com.api.Comics.service.ComicService;
 
@@ -42,13 +41,9 @@ public class ComicController {
 	Logger logger = LoggerFactory.getLogger(ComicController.class);
 
 	@GetMapping("/{id}")
-	public ComicEntity oneComic(@PathVariable int id) {
+	public ResponseEntity<SingleComicResponse> oneComic(@PathVariable int id) {
 		logger.info("Comic controller " + id);
-
-		Optional<ComicEntity> c = comicRepository.findById(id);
-		logger.info(c.get().toString());
-
-		return c.get();
+		return comicService.getComic(id);
 	}
 	
 	@GetMapping("/collectionStats")
@@ -81,10 +76,16 @@ public class ComicController {
 	}
 
 	@GetMapping("/titles")
-	public List<ComicEntity> uniqueTitles() {
+	public List<ComicEntity> getTitlesAndPublisherMap() {
 		logger.info("Titles and publishers endpoint");
 
 		return comicService.getTitlesAndPublishers();
+	}
+	
+	@GetMapping("/distinctTitles")
+	public List<String> uniqueTitles() {
+		logger.info("Titles endpoint");
+		return comicService.getDistinctTitles();
 	}
 	
 	@PostMapping("/addComics")
@@ -104,13 +105,8 @@ public class ComicController {
 	}
 	
 	@PostMapping("/updateComic")
-	public ResponseEntity<?> updateComic(@RequestBody ComicModel comic) {
-		ComicEntity comicEntity = comicService.updateComic(comic);
-		if(comicEntity == null) {
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		} else {
-			return ResponseEntity.ok(new Response("Comic " + comicEntity.getComicID() + " successfully updated."));
-		}
+	public ResponseEntity<SingleComicResponse> updateComic(@RequestBody UpdateComicRequest updateComicRequest) {
+		return comicService.updateComic(updateComicRequest);
 	}
 	
 	@PostMapping("/getComicsPage/{pageNumber}/{pageSize}")

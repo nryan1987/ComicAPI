@@ -7,7 +7,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 
 import com.api.Comics.entities.ComicEntity;
@@ -25,6 +24,9 @@ public interface ComicRepository extends JpaRepository<ComicEntity, Integer> {
 	
 	@Query(value = "SELECT DISTINCT c.title, MAX(c.Volume) as volume, c.publisher FROM Comics c GROUP BY c.Title, c.Publisher ", nativeQuery = true)
 	List<Object[]> getTitlesAndPublishers();
+	
+	@Query(value = "SELECT DISTINCT c.title FROM Comics c ORDER BY c.Title", nativeQuery = true)
+	List<String> getDistinctTitles();
 	
 	@Query(value = "SELECT Count(Comics.ComicID) AS CountOfComics, Sum(Comics.PricePaid) AS SumOfPricePaid,"
 			+ "Sum(Comics.Value) AS SumOfValue, Avg(Comics.PricePaid) AS AveragePricePaid,"
