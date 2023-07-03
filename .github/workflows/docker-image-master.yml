@@ -1,0 +1,59 @@
+name: Build and Publish Docker Image
+
+on:
+  push:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Bump Version
+        id: bump
+        uses: nnichols/maven-version-bump-action@v3
+        with:
+          github-token: ${{ secrets.github_token }}
+
+      - name: Print Version
+        run: "echo 'New Version: ${{steps.bump.outputs.version}}'"
+      - name: Set up JDK
+        uses: actions/setup-java@v1
+        with:
+          java-version: 1.11
+      - name: Write db name property
+        uses: Reedyuk/write-properties@v1.0.3
+        with:
+          # The path to properties file to write
+          path: './src/main/resources/application.properties'
+          property: 'db.name'
+          value: 'Comics'
+      - name: Write db server property
+        uses: Reedyuk/write-properties@v1.0.3
+        with:
+          # The path to properties file to write
+          path: './src/main/resources/application.properties'
+          property: 'db.server'
+          value: ${{ secrets.DB_IP }}
+      - name: Write username property
+        uses: Reedyuk/write-properties@v1.0.3
+        with:
+          # The path to properties file to write
+          path: './src/main/resources/application.properties'
+          property: 'spring.datasource.username'
+          value: ${{ secrets.DB_USERNAME }}
+      - name: Write password property
+        uses: Reedyuk/write-properties@v1.0.3
+        with:
+          # The path to properties file to write
+          path: './src/main/resources/application.properties'
+          property: 'spring.datasource.password'
+          value: ${{ secrets.DB_PASSWORD }}
+      - name: Build with Maven
+        run: mvn clean package
+      - name: Build Docker image
+        run: |
+          docker build -t comics .
+          docker tag comics nryan1987/comics:master-latest
+          docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
+          docker push nryan1987/comics:master-latest
