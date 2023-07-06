@@ -1,4 +1,4 @@
 FROM openjdk:11
-ADD target/comics.jar comics.jar
+ADD target/*.jar Comics.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "comics.jar"]
+ENTRYPOINT ["java", "-jar", "Comics.jar"]
