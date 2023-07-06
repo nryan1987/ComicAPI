@@ -62,7 +62,6 @@ public class SecurityConfigurer extends WebSecurityConfigurerAdapter {
 	      .and()
 	      //.authenticationProvider(provider)
 	      .addFilterBefore(jwtRequestFilter, UsernamePasswordAuthenticationFilter.class)
-				.requiresChannel(channel -> channel.anyRequest().requiresSecure())
 	      .authorizeRequests()
 	      .requestMatchers(PROTECTED_URLS)
 	      .authenticated()
