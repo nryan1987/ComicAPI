@@ -1,15 +1,14 @@
 package com.api.Comics.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
+import javax.persistence.*;
 import java.sql.Timestamp;
 import java.time.LocalDate;
+import java.util.List;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import javax.persistence.Table;
-
+@JsonIgnoreProperties(value = { "notes" })
 @Data
 @Entity
 @Table(name = "Comics")
@@ -35,4 +34,8 @@ public class ComicEntity {
 	private Timestamp lastUpdated;
 
 	private LocalDate publicationDate;
+
+	@OneToMany(mappedBy = "comicEntity")
+	@OrderBy("Notes ASC")
+	private List<NoteEntity> notes;
 }
