@@ -10,6 +10,7 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Map;
 
+import static com.api.Comics.constants.ApplicationConstants.findAllWithNotes;
 import static com.api.Comics.constants.ApplicationConstants.searchQuery;
 
 public interface ComicRepository extends JpaRepository<ComicEntity, Integer> {
@@ -32,6 +33,12 @@ public interface ComicRepository extends JpaRepository<ComicEntity, Integer> {
 
 	@Query(value = "SELECT MAX(c.ComicID) from Comics c", nativeQuery = true)
 	Integer getMaxComicID();
+
+	@Query(value = findAllWithNotes,
+			countQuery = "SELECT count(*) FROM "
+					+ " (" + findAllWithNotes + ") as countQuery",
+			nativeQuery = true)
+	Page<ComicEntity> findAllWithNotes(Pageable page);
 
 	@Query(value = searchQuery,
 			countQuery = "SELECT count(*) FROM "

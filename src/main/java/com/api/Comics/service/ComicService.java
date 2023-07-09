@@ -27,8 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static com.api.Comics.constants.ApplicationConstants.titleVolumeIssueSort;
-
 @Service
 public class ComicService {
     Logger logger = LoggerFactory.getLogger(ComicController.class);
@@ -197,9 +195,9 @@ public class ComicService {
         ComicPageResponse response = new ComicPageResponse();
         Page<ComicEntity> resultsPage;
         try {
-            Pageable comicPage = PageRequest.of(pageNumber, pageSize, titleVolumeIssueSort);
+            Pageable comicPage = PageRequest.of(pageNumber, pageSize);
             if (searchTerm == null || searchTerm.isEmpty()) {
-                resultsPage = comicRepository.findAll(comicPage);
+                resultsPage = comicRepository.findAllWithNotes(comicPage);
             } else {
                 resultsPage = comicRepository.getAllComicsSearchTerm(searchTerm.trim(), comicPage);
             }
