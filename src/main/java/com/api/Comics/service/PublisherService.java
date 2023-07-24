@@ -3,6 +3,8 @@ package com.api.Comics.service;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -42,25 +44,33 @@ public class PublisherService {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
 		}
 	}
-	
-	public String addPublisher(String newPublisher) {
-		newPublisher = newPublisher.trim();
-		List<String> publisherLst = new ArrayList<>();
-		Iterable<PublisherEntity> publishers = publisherRepository.findAll();
-		publishers.forEach(publisher -> { publisherLst.add(publisher.getPublisher()); });
-		
-		for(String publisher : publisherLst) {
-			if(publisher.equalsIgnoreCase(newPublisher)) {
-				return publisher;
+
+	/**
+	 *
+	 * @param newPublishers a list of strings
+	 * @return the number of new publishers added.
+	 */
+	public int addPublisher(List<String> newPublishers) {
+		List<String> publishers = publisherRepository.findAll().stream().map(publisherEntity -> publisherEntity.getPublisher().toUpperCase()).collect(Collectors.toList());
+
+		List<String> publishersToAdd = new ArrayList<>();
+		for(String newPublisher : newPublishers) {
+			if(!publishers.contains(newPublisher.trim().toUpperCase())) {
+				publishersToAdd.add(newPublisher.trim());
 			}
 		}
-		
-		int publisherID = publisherRepository.getMaxPublisherID().intValue();
-		
-		PublisherEntity publisherEntity = new PublisherEntity();
-		publisherEntity.setPublisher(newPublisher);
-		publisherEntity.setPublisherID(++publisherID);
-		
-		return publisherRepository.save(publisherEntity).getPublisher();
+
+		if(publishersToAdd.isEmpty()) {
+			return 0; //no new publishers added.
+		} else {
+			AtomicInteger publisherID = new AtomicInteger(publisherRepository.getMaxPublisherID());
+			List<PublisherEntity> publisherEntities = publishersToAdd.stream().map(publisher->{
+				PublisherEntity publisherEntity = new PublisherEntity();
+				publisherEntity.setPublisher(publisher);
+				publisherEntity.setPublisherID(publisherID.incrementAndGet());
+				return publisherEntity;
+			}).collect(Collectors.toList());
+			return publisherRepository.saveAll(publisherEntities).size();
+		}
 	}
 }

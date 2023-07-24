@@ -8,5 +8,5 @@ import lombok.Setter;
 public class ComicPageItemModel {
     private int ComicID, volume;
     private double issue, pricePaid, value;
-    private String title, publisher, condition, publicationDate, notes;
+    private String title, publisher, condition, publicationDate, notesStr;
 }

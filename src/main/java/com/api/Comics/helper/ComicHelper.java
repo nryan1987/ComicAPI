@@ -20,7 +20,7 @@ public class ComicHelper {
 
         if (comicEntity.getNotes() != null && comicEntity.getNotes().size() > 0) {
             String notesStr = comicEntity.getNotes().stream().map(NoteEntity::getNotes).collect(Collectors.joining(", "));
-            comicPageItemModel.setNotes(notesStr);
+            comicPageItemModel.setNotesStr(notesStr);
         }
         comicPageItemModel.setPublicationDate(getDisplayDate(comicEntity.getPublicationDate()));
         return comicPageItemModel;

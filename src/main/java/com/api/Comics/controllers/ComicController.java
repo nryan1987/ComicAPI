@@ -13,8 +13,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-import static com.api.Comics.constants.APIConstants.COMIC;
-import static com.api.Comics.constants.APIConstants.GET_PAGE;
+import static com.api.Comics.constants.APIConstants.*;
 
 @RestController
 @CrossOrigin
@@ -47,13 +46,9 @@ public class ComicController {
 		return comicService.latestIssues(numIssues);
 	}
 	
-	@PostMapping("/findByTitle")
-	//public List<ComicEntity> findByTitle(@RequestBody Map<Object, Object> parameters) {
-	public List<ComicEntity> findByTitle(@RequestBody String parameters) {
-		logger.info("Find by title: {}", parameters);
-		//String title = (String) parameters.get("title");
-		List<ComicEntity> comics = comicService.findByTitle(parameters); 
-		return comics;
+	@PostMapping(FIND_BY_TITLE)
+	public ResponseEntity<FindByTitleResponse> findByTitle(@RequestBody FindByTitleRequest findByTitleRequest) {
+		return comicService.findByTitle(findByTitleRequest.getTitle());
 	}
 
 	@GetMapping("/all")

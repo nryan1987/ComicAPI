@@ -23,9 +23,10 @@ import org.springframework.stereotype.Service;
 import java.sql.Timestamp;
 import java.time.*;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 @Service
 public class ComicService {
@@ -44,16 +45,23 @@ public class ComicService {
     @Autowired
     NoteRepository noteRepository;
     @Autowired
-    PublisherRepository publisherRepository;
-    @Autowired
     PublisherService publisherService;
 
     public List<ComicEntity> latestIssues(int numIssues) {
         return comicRepository.findLatestIssues(numIssues);
     }
 
-    public List<ComicEntity> findByTitle(String title) {
-        return comicRepository.findByTitle(title);
+    public ResponseEntity<FindByTitleResponse> findByTitle(String title) {
+        FindByTitleResponse response = new FindByTitleResponse();
+        try {
+            List<ComicEntity> comicEntities = comicRepository.findByTitle(title);
+            response.setComics(comicEntities.stream().map(comicEntity -> objectMapper.convertValue(comicEntity, ComicModel.class)).collect(Collectors.toList()));
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            response.setMessage("Error finding issues by title.");
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
     }
 
     public CollectionStats getCollectionStats() {
@@ -99,53 +107,36 @@ public class ComicService {
     }
 
     public synchronized List<ResponseError> addComicsList(List<ComicModel> lst) {
-        List<ResponseError> errors = new ArrayList<>();
-        Integer ID = comicRepository.getMaxComicID();
-        logger.info("MAX ID: " + ID);
+        try {
+            Set<String> publishers = new HashSet<>();
+            AtomicInteger ID = new AtomicInteger(comicRepository.getMaxComicID());
+            logger.info("MAX ID: " + ID);
+            LocalDate today = LocalDate.now();
+            List<ComicEntity> entities = lst.stream().map(comicModel -> {
+                ComicEntity comicEntity = objectMapper.convertValue(comicModel, ComicEntity.class);
 
-        Iterable<PublisherEntity> publishers = publisherRepository.findAll();
-        ArrayList<String> publishersStr = new ArrayList<>();
-        int publisherID = publisherRepository.getMaxPublisherID().intValue();
+                //Set default values
+                comicEntity.setComicID(ID.incrementAndGet());
+                comicEntity.setPublicationDate(LocalDate.of(today.getYear(), today.getMonthValue(), 1));
+                comicEntity.setCondition("MT 10.0");
+                publishers.add(comicEntity.getPublisher());
 
-        LocalDate today = LocalDate.now();
-        for (ComicModel c : lst) {
+                //Set Notes
+                List<NoteEntity> noteEntities = comicModel.getNotes() == null ? new ArrayList<>() : comicModel.getNotes();
+                noteEntities.forEach(noteEntity -> noteEntity.setComicID(ID.get()));
+                comicEntity.setNotes(noteEntities);
 
-            publishers.forEach(publisher -> {
-                publishersStr.add(publisher.getPublisher());
-            });
-            boolean containsSearchStr = publishersStr.stream().anyMatch(c.getPublisher()::equalsIgnoreCase);
+                return comicEntity;
+            }).collect(Collectors.toList());
+            entities.forEach(comicEntity -> logger.info("Comic Entity: {}", comicEntity));
 
-            if (!containsSearchStr) {
-                PublisherEntity pe = new PublisherEntity();
-                pe.setPublisherID(++publisherID);
-                pe.setPublisher(c.getPublisher());
-                publisherRepository.save(pe);
-
-                publishersStr.add(c.getPublisher());
-            }
-
-            c.setComicID(++ID);
-            c.setCondition("MT 10.0");
-            c.setPublicationDate(LocalDate.of(today.getYear(), today.getMonthValue(), 1));
-            if (c.getNotes() == null) {
-                c.setNotes(new ArrayList<NoteEntity>());
-            }
-
-            logger.info(c.toString());
-            try {
-                comicRepository.save(objectMapper.convertValue(c, ComicEntity.class));
-                for (NoteEntity note : c.getNotes()) {
-                    note.setComicID(ID);
-                    logger.info(note.toString());
-                    noteRepository.save(note);
-                }
-            } catch (Exception e) {
-                e.printStackTrace();
-                errors.add(new ResponseError(c.getShortString(), e.getMessage()));
-            }
+            publisherService.addPublisher(new ArrayList<>(publishers));
+            comicRepository.saveAll(entities);
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
-        return errors;
+        return new ArrayList<>();
     }
 
     public synchronized ResponseEntity<SingleComicResponse> updateComic(UpdateComicRequest updateComicRequest) {
@@ -159,9 +150,9 @@ public class ComicService {
             }
 
             Timestamp recordCreationTS = comicEntity.get().getRecordCreationDate();
+            publisherService.addPublisher(List.of(updateComicRequest.getPublisher())); //This will ensure the publisher has been added to the publisher table before saving the comic entity.
 
             ComicEntity comicEntityToSave = objectMapper.convertValue(updateComicRequest, ComicEntity.class);
-            comicEntityToSave.setPublisher(publisherService.addPublisher(updateComicRequest.getPublisher()));
             comicRepository.save(comicEntityToSave);
             noteRepository.saveAll(updateComicRequest.getNotes());
 
