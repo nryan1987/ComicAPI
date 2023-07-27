@@ -6,7 +6,6 @@ import lombok.Data;
 import javax.persistence.*;
 import java.sql.Timestamp;
 
-@JsonIgnoreProperties(value = {"comicEntity"})
 @Data
 @Entity
 @Table(name = "Notes")
