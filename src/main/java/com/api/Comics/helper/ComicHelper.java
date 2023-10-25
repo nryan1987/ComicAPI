@@ -2,18 +2,46 @@ package com.api.Comics.helper;
 
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.entities.NoteEntity;
+import com.api.Comics.models.ComicModel;
 import com.api.Comics.models.ComicPageItemModel;
+import com.api.Comics.models.ResponseError;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
 public class ComicHelper {
+    Logger logger = LoggerFactory.getLogger(ComicHelper.class);
     @Autowired
     ObjectMapper objectMapper;
+
+    public List<ComicEntity> buildComicEntityList(List<ComicModel> lst, int maxID) {
+        AtomicInteger ID = new AtomicInteger(maxID);
+        LocalDate today = LocalDate.now();
+        return lst.stream().map(comicModel -> {
+            ComicEntity comicEntity = objectMapper.convertValue(comicModel, ComicEntity.class);
+
+            //Set default values
+            comicEntity.setComicID(ID.incrementAndGet());
+            comicEntity.setPublicationDate(LocalDate.of(today.getYear(), today.getMonthValue(), 1));
+            comicEntity.setCondition("MT 10.0");
+
+            //Set Notes
+            List<NoteEntity> noteEntities = comicModel.getNotes() == null ? new ArrayList<>() : comicModel.getNotes();
+            noteEntities.forEach(noteEntity -> noteEntity.setComicID(ID.get()));
+            comicEntity.setNotes(noteEntities);
+
+            return comicEntity;
+        }).collect(Collectors.toList());
+    }
 
     public ComicPageItemModel convertComicEntityToComicPageItem(ComicEntity comicEntity) {
         ComicPageItemModel comicPageItemModel = objectMapper.convertValue(comicEntity, ComicPageItemModel.class);

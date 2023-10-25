@@ -30,18 +30,15 @@ import java.util.stream.Collectors;
 
 @Service
 public class ComicService {
-    Logger logger = LoggerFactory.getLogger(ComicController.class);
+    Logger logger = LoggerFactory.getLogger(ComicService.class);
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
 
     @Autowired
     ComicHelper comicHelper;
-
     @Autowired
     ComicRepository comicRepository;
-
     @Autowired
     ObjectMapper objectMapper;
-
     @Autowired
     NoteRepository noteRepository;
     @Autowired
@@ -107,36 +104,26 @@ public class ComicService {
     }
 
     public synchronized List<ResponseError> addComicsList(List<ComicModel> lst) {
+        List<ComicEntity> entities = comicHelper.buildComicEntityList(lst, comicRepository.getMaxComicID());
+        List<ResponseError> errors = new ArrayList<>();
         try {
-            Set<String> publishers = new HashSet<>();
-            AtomicInteger ID = new AtomicInteger(comicRepository.getMaxComicID());
-            logger.info("MAX ID: " + ID);
-            LocalDate today = LocalDate.now();
-            List<ComicEntity> entities = lst.stream().map(comicModel -> {
-                ComicEntity comicEntity = objectMapper.convertValue(comicModel, ComicEntity.class);
-
-                //Set default values
-                comicEntity.setComicID(ID.incrementAndGet());
-                comicEntity.setPublicationDate(LocalDate.of(today.getYear(), today.getMonthValue(), 1));
-                comicEntity.setCondition("MT 10.0");
-                publishers.add(comicEntity.getPublisher());
-
-                //Set Notes
-                List<NoteEntity> noteEntities = comicModel.getNotes() == null ? new ArrayList<>() : comicModel.getNotes();
-                noteEntities.forEach(noteEntity -> noteEntity.setComicID(ID.get()));
-                comicEntity.setNotes(noteEntities);
-
-                return comicEntity;
-            }).collect(Collectors.toList());
+            Set<String> publishers = entities.stream().map(ComicEntity::getPublisher).collect(Collectors.toSet());
             entities.forEach(comicEntity -> logger.info("Comic Entity: {}", comicEntity));
 
             publisherService.addPublisher(new ArrayList<>(publishers));
             comicRepository.saveAll(entities);
         } catch (Exception e) {
-            e.printStackTrace();
+            for (ComicEntity comicEntity : entities) {
+                try {
+                    comicRepository.save(comicEntity);
+                } catch (Exception ex) {
+                    logger.error("Error saving comic: {}", comicEntity);
+                    errors.add(new ResponseError(comicEntity.toString(), ex.getMessage()));
+                }
+            }
         }
 
-        return new ArrayList<>();
+        return errors;
     }
 
     public synchronized ResponseEntity<SingleComicResponse> updateComic(UpdateComicRequest updateComicRequest) {
