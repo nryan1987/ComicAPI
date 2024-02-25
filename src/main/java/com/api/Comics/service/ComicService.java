@@ -154,7 +154,6 @@ public class ComicService {
 
             ComicEntity comicEntityToSave = objectMapper.convertValue(updateComicRequest, ComicEntity.class);
             comicRepository.save(comicEntityToSave);
-            noteRepository.saveAll(updateComicRequest.getNotes());
 
             if (updateComicRequest.getDeletedNotes() != null) {
                 updateComicRequest.getDeletedNotes().forEach(noteEntity -> {
