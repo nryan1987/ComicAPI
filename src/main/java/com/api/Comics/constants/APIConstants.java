@@ -5,6 +5,7 @@ public final class APIConstants {
 	public static final String COMIC = "/comic";
 	public static final String FIND_BY_TITLE = "/findByTitle";
 	public static final String GET_PAGE = "/getComicsPage";
+	public static final String TITLES = "/titles";
 	
 	//Publisher API
 	public static final String PUBLISHER = "/publisher";

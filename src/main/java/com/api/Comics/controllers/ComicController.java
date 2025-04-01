@@ -2,8 +2,10 @@ package com.api.Comics.controllers;
 
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.models.*;
+import com.api.Comics.models.response.TitlesAndPublishersResponse;
 import com.api.Comics.repository.ComicRepository;
 import com.api.Comics.service.ComicService;
+import com.api.Comics.service.PublisherService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -58,11 +60,11 @@ public class ComicController {
 		return (List<ComicEntity>) comicRepository.findAll();
 	}
 
-	@GetMapping("/titles")
-	public List<ComicEntity> getTitlesAndPublisherMap() {
+	@GetMapping(TITLES)
+	public ResponseEntity<TitlesAndPublishersResponse> getTitlesAndPublisherMap() {
 		logger.info("Titles and publishers endpoint");
-
-		return comicService.getTitlesAndPublishers();
+		TitlesAndPublishersResponse response = comicService.getTitlesAndPublishers();
+		return ResponseEntity.ok(response);
 	}
 	
 	@GetMapping("/distinctTitles")
