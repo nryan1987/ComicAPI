@@ -48,7 +48,7 @@ VALUES (1,'MT 10.0'),
 	 (22,'GD- 1.8'),
 	 (23,'F/GD 1.5'),
 	 (24,'F 1.0'),
-	 (25,'PR 0.5');
+	 (25,'PR 0.5') ON DUPLICATE KEY UPDATE `Condition`=VALUES(`Condition`);
 
 -- Comics.Creators definition
 CREATE TABLE IF NOT EXISTS `Creators` (

@@ -6,6 +6,8 @@ import com.api.Comics.entities.NoteEntity;
 import com.api.Comics.entities.PublisherEntity;
 import com.api.Comics.helper.ComicHelper;
 import com.api.Comics.models.*;
+import com.api.Comics.models.response.TitleData;
+import com.api.Comics.models.response.TitlesAndPublishersResponse;
 import com.api.Comics.repository.ComicRepository;
 import com.api.Comics.repository.NoteRepository;
 import com.api.Comics.repository.PublisherRepository;
@@ -25,8 +27,8 @@ import java.time.*;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 public class ComicService {
@@ -35,17 +37,16 @@ public class ComicService {
 
     @Autowired
     ComicHelper comicHelper;
-
+    @Autowired
+    PublisherService publisherService;
     @Autowired
     ComicRepository comicRepository;
-
     @Autowired
-    ObjectMapper objectMapper;
-
+    PublisherRepository publisherRepository;
     @Autowired
     NoteRepository noteRepository;
     @Autowired
-    PublisherService publisherService;
+    ObjectMapper objectMapper;
 
     public List<ComicEntity> latestIssues(int numIssues) {
         return comicRepository.findLatestIssues(numIssues);
@@ -84,21 +85,31 @@ public class ComicService {
         }
     }
 
-    public List<ComicEntity> getTitlesAndPublishers() {
+    public TitlesAndPublishersResponse getTitlesAndPublishers() {
         List<Object[]> lst = comicRepository.getTitlesAndPublishers();
-
-        ArrayList<ComicEntity> comicLst = new ArrayList<>();
+        Map<String, TitleData> titlePublishersMap = new HashMap<>();
 
         for (Object[] obj : lst) {
-            ComicEntity c = new ComicEntity();
-            c.setTitle((String) obj[0]);
-            c.setVolume((Integer) obj[1]);
-            c.setPublisher((String) obj[2]);
+            String title = (String) obj[0];
+            String publisher = (String) obj[2];
 
-            comicLst.add(c);
+            TitleData titleData = new TitleData();
+            titleData.setTitle(title);
+            titleData.setVolume((Integer) obj[1]);
+            titleData.setPublishers(Stream.of(publisher).collect(Collectors.toSet()));
+
+            titlePublishersMap.computeIfPresent(title, (key, value) -> {
+                value.getPublishers().add(publisher);
+                return value;
+            });
+            titlePublishersMap.putIfAbsent(title, titleData);
         }
 
-        return comicLst;
+        TitlesAndPublishersResponse response = new TitlesAndPublishersResponse();
+        response.setTitleData(new ArrayList<>(titlePublishersMap.values()));
+        response.setPublishers(publisherRepository.findAll().stream().map(PublisherEntity::getPublisher).collect(Collectors.toSet()));
+
+        return response;
     }
 
     public List<String> getDistinctTitles() {

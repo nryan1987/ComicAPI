@@ -20,7 +20,7 @@ public interface ComicRepository extends JpaRepository<ComicEntity, Integer> {
 
 	List<ComicEntity> findByTitle(@Param(value = "title") String title);
 
-	@Query(value = "SELECT DISTINCT c.title, MAX(c.Volume) as volume, c.publisher FROM Comics c GROUP BY c.Title, c.Publisher ", nativeQuery = true)
+	@Query(value = "SELECT DISTINCT c.title, MAX(c.Volume) as volume, c.publisher FROM Comics c GROUP BY c.Title, c.Publisher", nativeQuery = true)
 	List<Object[]> getTitlesAndPublishers();
 
 	@Query(value = "SELECT DISTINCT c.title FROM Comics c ORDER BY c.Title", nativeQuery = true)
