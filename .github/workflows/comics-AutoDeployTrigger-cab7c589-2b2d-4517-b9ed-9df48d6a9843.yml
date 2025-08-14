@@ -1,0 +1,49 @@
+name: Trigger auto deployment for comics
+
+# When this action will be executed
+on:
+  # Automatically trigger it when detected changes in repo
+  push:
+    branches: 
+      [ master ]
+    paths:
+    - '**'
+    - '.github/workflows/comics-AutoDeployTrigger-cab7c589-2b2d-4517-b9ed-9df48d6a9843.yml'
+
+  # Allow manual trigger 
+  workflow_dispatch:      
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    permissions: 
+      id-token: write #This is required for requesting the OIDC JWT Token
+      contents: read #Required when GH token is used to authenticate with private repo
+
+    steps:
+      - name: Checkout to the branch
+        uses: actions/checkout@v2
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.COMICS_AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.COMICS_AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.COMICS_AZURE_SUBSCRIPTION_ID }}
+
+      - name: Build and push container image to registry
+        uses: azure/container-apps-deploy-action@v2
+        with:
+          appSourcePath: ${{ github.workspace }}
+          _dockerfilePathKey_: _dockerfilePath_
+          _targetLabelKey_: _targetLabel_
+          registryUrl: docker.io
+          registryUsername: ${{ secrets.COMICS_REGISTRY_USERNAME }}
+          registryPassword: ${{ secrets.COMICS_REGISTRY_PASSWORD }}
+          containerAppName: comics
+          resourceGroup: comics-env_SpringApps_2ee64607-c10a-4e48-8cba-3dc12b8384d4
+          imageToBuild: nryan1987/comics:${{ github.sha }}
+          _buildArgumentsKey_: |
+            _buildArgumentsValues_
+
+
