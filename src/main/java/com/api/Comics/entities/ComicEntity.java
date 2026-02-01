@@ -33,7 +33,7 @@ public class ComicEntity {
 
     private LocalDate publicationDate;
 
-    @OneToMany(targetEntity = NoteEntity.class, cascade = CascadeType.ALL)
+    @OneToMany(targetEntity = NoteEntity.class, cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     @JoinColumn(name = "ComicID", referencedColumnName = "ComicID")
     @OrderBy("Notes ASC")
     private List<NoteEntity> notes;
