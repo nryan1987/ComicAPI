@@ -4,6 +4,7 @@ import com.api.Comics.controllers.ComicController;
 import com.api.Comics.entities.ComicEntity;
 import com.api.Comics.entities.NoteEntity;
 import com.api.Comics.entities.PublisherEntity;
+import com.api.Comics.helper.CacheHelper;
 import com.api.Comics.helper.ComicHelper;
 import com.api.Comics.models.*;
 import com.api.Comics.models.response.TitleData;
@@ -37,6 +38,8 @@ public class ComicService {
 
     @Autowired
     ComicHelper comicHelper;
+    @Autowired
+    CacheHelper cacheHelper;
     @Autowired
     PublisherService publisherService;
     @Autowired
@@ -143,6 +146,7 @@ public class ComicService {
 
             publisherService.addPublisher(new ArrayList<>(publishers));
             comicRepository.saveAll(entities);
+            cacheHelper.loadComicsPageCache(); //reload the cache after adding new comics
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -198,7 +202,8 @@ public class ComicService {
         try {
             Pageable comicPage = PageRequest.of(pageNumber, pageSize);
             if (searchTerm == null || searchTerm.isEmpty()) {
-                resultsPage = comicRepository.findAllWithNotes(comicPage);
+                Page<ComicEntity> cachedPage = cacheHelper.getComicPage(pageNumber);
+                resultsPage = cachedPage != null ? cachedPage : comicRepository.findAllWithNotes(comicPage);
             } else {
                 resultsPage = comicRepository.getAllComicsSearchTerm(searchTerm.trim(), comicPage);
             }
