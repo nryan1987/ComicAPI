@@ -10,7 +10,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v6
-      ref: 'master'
+      with:
+        ref: 'master'
     - name: Bump Version
       id: bump
       uses: nnichols/maven-version-bump-action@v3
