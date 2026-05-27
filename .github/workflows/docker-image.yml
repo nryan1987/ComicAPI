@@ -1,4 +1,4 @@
-name: Build and Publish Docker Image
+name: Build dev and Publish Docker Image
 
 on:
   push:
@@ -9,7 +9,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v6
+      ref: 'master'
     - name: Bump Version
       id: bump
       uses: nnichols/maven-version-bump-action@v3
